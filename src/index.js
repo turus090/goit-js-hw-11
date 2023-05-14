@@ -1,4 +1,10 @@
 import { getImages } from "./fetchData";
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import scrollIntoView from "scroll-into-view-if-needed";
+import { Notify } from "notiflix";
+
+
   
 const form = document.querySelector('#search-form');
 const galleryRef = document.querySelector('.gallery');
@@ -9,13 +15,23 @@ form.addEventListener('input', (e) => {
    loadMoreBtn.style.display = 'none';
 }) 
 
+const writeCountImg = () => {
+  let page = localStorage.getItem('page')
+  page = parseInt(page)
+  Notify.info(`Count images: ${page*40}`)
+}
+
 
 
 const genarateCards = (imgArr) => {
+  writeCountImg()
+  console.log(imgArr);
   imgArr.forEach(imgItem => {
     galleryRef.innerHTML += `
       <div class="photo-card">
-      <img class="img"  src="${imgItem.previewURL}" alt="${imgItem.tags}" loading="lazy" />
+        <a href="${imgItem.largeImageURL}">
+          <img class="img"  src="${imgItem.previewURL}" alt="${imgItem.tags}" loading="lazy" />
+        </a>
         <div class="info">
           <p class="info-item">
             <b>Likes</b>
@@ -37,15 +53,20 @@ const genarateCards = (imgArr) => {
       </div>
     `
   });
+  let imgList = document.querySelectorAll('.photo-card');
+ let lastEl = imgList[imgList.length - 1]
+  scrollIntoView(lastEl, { behavior: 'smooth', scrollMode: 'if-needed' })
+  let lightBox = new SimpleLightbox('.photo-card a')
 } 
-
 loadMoreBtn.addEventListener('click',async () =>{
   let currentPage = parseInt(localStorage.getItem('page'));
   currentPage += 1
   localStorage.setItem('page', currentPage)
   let searchText = localStorage.getItem("search")
+  
   let imgs = await getImages(searchText, currentPage, 40)
   genarateCards(imgs.hits)
+  
 })
 
 form.addEventListener('submit', async(e) => {
@@ -55,11 +76,12 @@ form.addEventListener('submit', async(e) => {
     loadMoreBtn.style.display = 'block'
     let imgs = await getImages(searchText, 1, 40)
       genarateCards(imgs.hits)
+    });
         /*.then((imgs)=>{
             console.log(imgs) 
         })*/
 
-});
+
 /*
 collections
 : 

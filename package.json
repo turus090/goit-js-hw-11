@@ -22,6 +22,7 @@
     "gulp": "^4.0.2",
     "modern-normalize": "^1.1.0",
     "notiflix": "^3.2.6",
+    "scroll-into-view-if-needed": "^3.0.10",
     "simplelightbox": "^2.14.0"
   },
   "devDependencies": {
