@@ -16,15 +16,22 @@ form.addEventListener('input', (e) => {
 }) 
 
 const writeCountImg = () => {
+  let totalHits = parseInt(localStorage.getItem('countIms'))
   let page = localStorage.getItem('page')
   page = parseInt(page)
-  Notify.info(`Count images: ${page*40}`)
+  if (totalHits < page*40){ // total 30 2*40 = 80
+    Notify.info(`Count imgs on page:${totalHits}`)
+    loadMoreBtn.style.display = 'none'
+  } else { 
+    Notify.info(`Count imgs on page:${page*40}`)
+  }
+  
 }
 
 
 
 const genarateCards = (imgArr) => {
-  writeCountImg()
+  
   console.log(imgArr);
   imgArr.forEach(imgItem => {
     galleryRef.innerHTML += `
@@ -58,24 +65,32 @@ const genarateCards = (imgArr) => {
   scrollIntoView(lastEl, { behavior: 'smooth', scrollMode: 'if-needed' })
   let lightBox = new SimpleLightbox('.photo-card a')
 } 
-loadMoreBtn.addEventListener('click',async () =>{
+loadMoreBtn.addEventListener('click',() =>{
+  setTimeout(async()=> {
   let currentPage = parseInt(localStorage.getItem('page'));
   currentPage += 1
   localStorage.setItem('page', currentPage)
+  writeCountImg()
   let searchText = localStorage.getItem("search")
   
   let imgs = await getImages(searchText, currentPage, 40)
   genarateCards(imgs.hits)
-  
+  , 500})
 })
 
 form.addEventListener('submit', async(e) => {
     e.preventDefault();
     let searchText = localStorage.getItem("search")//e.target.elements.searchQuery.value
     localStorage.setItem('page', '1')
-    loadMoreBtn.style.display = 'block'
     let imgs = await getImages(searchText, 1, 40)
+    if (imgs.hits.length == 0){
+      Notify.failure(`Can't find any images`)
+    } else { 
+      loadMoreBtn.style.display = 'block'
       genarateCards(imgs.hits)
+      localStorage.setItem('countIms', imgs.total)
+      writeCountImg()
+    }
     });
         /*.then((imgs)=>{
             console.log(imgs) 
